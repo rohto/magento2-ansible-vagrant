@@ -1,0 +1,31 @@
+---
+- name: Update apt cache
+  sudo: yes
+  apt: update_cache=yes
+
+- name: Install MariaDB packages
+  sudo: yes
+  apt: pkg={{ item }} state=present update_cache=yes
+  with_items:
+    - mariadb-server
+    - php-mysqlnd
+
+- name: Create a database
+  mysql_db:
+    name: {{ mysql_dbname }}
+    state: present
+
+- name: Create a dedicated user
+  mysql_user: 
+    name: {{ mysql_user }} 
+    password: {{ mysql_password }} 
+    priv: {{ mysql_dbname }}.*:ALL,GRANT
+    host: localhost
+    state: present
+
+-name: Create a tcp access user
+  mysql_user:
+    name: {{ mysql_tcp_user }}
+    password: {{ mysql_tcp_password }}
+    priv: {{ mysql_dbname }}.*:ALL,GRANT
+    state: present
