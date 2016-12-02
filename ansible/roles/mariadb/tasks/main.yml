@@ -1,31 +1,41 @@
 ---
 - name: Update apt cache
-  sudo: yes
+  become: yes
   apt: update_cache=yes
 
 - name: Install MariaDB packages
-  sudo: yes
+  become: yes
   apt: pkg={{ item }} state=present update_cache=yes
   with_items:
     - mariadb-server
+    - python-mysqldb
     - php-mysqlnd
 
+- name: set mysql root password
+  become: yes
+  mysql_user:
+    name=root
+    host={{ item }}
+    password={{ mysql_root_password }}
+  with_items:
+    - localhost
+    - 127.0.0.1
+    - ::1
+
+- name: set .my.cnf to root
+  template:
+    src: my.cnf.j2
+    dest: "{{ ansible_env.HOME }}/.my.cnf"
+    mode: 0600
+
 - name: Create a database
-  mysql_db:
-    name: {{ mysql_dbname }}
-    state: present
+  become: yes
+  mysql_db: name={{ mysql_dbname }} state=present
 
 - name: Create a dedicated user
-  mysql_user: 
-    name: {{ mysql_user }} 
-    password: {{ mysql_password }} 
-    priv: {{ mysql_dbname }}.*:ALL,GRANT
-    host: localhost
-    state: present
+  become: yes
+  mysql_user: name={{ mysql_user }} password={{ mysql_password }} priv={{ mysql_dbname }}.*:ALL,GRANT host=localhost state=present
 
--name: Create a tcp access user
-  mysql_user:
-    name: {{ mysql_tcp_user }}
-    password: {{ mysql_tcp_password }}
-    priv: {{ mysql_dbname }}.*:ALL,GRANT
-    state: present
+- name: Create a tcp access user
+  become: yes
+  mysql_user: name={{ mysql_tcp_user }} password={{ mysql_tcp_password }} priv={{ mysql_dbname }}.*:ALL,GRANT host={{ ansible_hostname }} state=present
