@@ -1,11 +1,24 @@
 ---
+- name: Create a directory for auth.json
+  file:
+    path: /home/vagrant/.composer/
+    state: directory
+    owner: vagrant 
+
 - name: auth.json
   sudo: no
-  template: src=auth.json dest=/home/vagrant/repos/magento2/auth.json
+  template: src=auth.json dest=/home/vagrant/.composer/auth.json
 
-- name: Composer update
-  sudo: no
-  composer: command=update working_dir=/home/vagrant/repos/magento2/
+- name: Clone project
+  composer:
+    command: "create-project"
+    arguments: "--repository-url=https://repo.magento.com/ magento/project-community-edition magento2"
+    working_dir: "/home/vagrant/repos/"
+    prefer_dist: "yes"
+
+#- name: Composer update
+#  sudo: no
+#  composer: command=update working_dir=/home/vagrant/repos/magento2/
 
 - name: Setup install
   sudo: no
@@ -28,3 +41,7 @@
     --base-url={{ base_url }}
   args:
     chdir: /home/vagrant/repos/magento2/
+
+#- name: Composer update
+#  sudo: no
+#  composer: command=update working_dir=/home/vagrant/repos/magento2/

@@ -5,9 +5,9 @@ Definitely not full-featured but useful to bootstrap a project.
 
 ## Packages
 - Nginx
-- PHP7 (built from source)
+- PHP7
 - Composer
-- Percona Server 5.6
+- MariaDB
 - Redis
 - Memcached
 - Git
