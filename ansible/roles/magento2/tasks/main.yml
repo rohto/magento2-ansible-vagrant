@@ -9,16 +9,36 @@
   sudo: no
   template: src=auth.json dest=/home/vagrant/.composer/auth.json
 
-- name: Clone project
-  composer:
-    command: "create-project"
-    arguments: "--repository-url=https://repo.magento.com/ magento/project-community-edition magento2"
-    working_dir: "/home/vagrant/repos/"
-    prefer_dist: "yes"
+#- name: Clone project
+#  composer:
+#    command: "create-project"
+#    arguments: "--repository-url=https://repo.magento.com/ magento/project-community-edition magento2"
+#    working_dir: "/home/vagrant/repos/"
+#    prefer_dist: "yes"
 
-#- name: Composer update
-#  sudo: no
-#  composer: command=update working_dir=/home/vagrant/repos/magento2/
+- name: Make sure git is present
+  sudo: yes
+  apt: name={{ item }} state=present
+  with_items:
+    - git
+
+- name: Repos directory
+  sudo: no
+  file: path=/home/vagrant/repos/ state=directory owner=vagrant
+
+- name: Clone repo
+  sudo: no
+  git: repo=https://github.com/magento/magento2 depth=1 dest=/home/vagrant/repos/magento2/ version={{ magento2_version }}
+
+- name: Install
+  sudo: no
+  shell: make install
+  args:
+    chdir: /home/vagrant/repos/sexy-bash-prompt/
+
+- name: Composer Install
+  sudo: no
+  composer: command=install working_dir=/home/vagrant/repos/magento2/
 
 - name: Setup install
   sudo: no
